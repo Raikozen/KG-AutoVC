@@ -207,11 +207,12 @@ class Bot(commands.Bot):
                 view_channel=True
             )
         }
-            
+
         textchannel_voice = await member.guild.create_text_channel(
             name="text-for-voice",
             topic=f"VC ID: {new_channel.id}",
-            overwrites=text_overwrites
+            overwrites=text_overwrites,
+            category=category
         )
 
         # MOVE MEMBER
@@ -222,7 +223,7 @@ class Bot(commands.Bot):
         self.channels.append(new_channel.id)
         self.textchannels.append(textchannel_voice.id)
         # SEND MESSAGE AND SAVE CONFIGS
-        await textchannel_voice.send(f"This is your personal text channel! Here you can discuss everything thats related to your voice channel. This channel will be deleted when everyone has left the voice channel. Messages in his channel can oly be read by people in your voice channel, and server admins.")
+        await textchannel_voice.send(f"This is your personal text channel! Here you can discuss everything thats related to your voice channel. This channel will be deleted when everyone has left the voice channel. Messages in his channel can only be read by people in your voice channel, and server admins.")
         await self.channels.save()
         await self.textchannels.save()
 

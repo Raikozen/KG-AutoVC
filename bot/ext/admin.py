@@ -59,14 +59,14 @@ class Default(commands.Cog):
         await ctx.send(f"Channel `{channel.name}` has been added to the starter channels")
 
     # SET THE DEFAULT USERLIMIT ON A CHANNEL
-    @parent.sub_command(name="limit")
+    @parent.sub_command(name="defaultlimit")
     async def child_limit(self, ctx, channel: discord.VoiceChannel, limit: int = commands.Param(min_value=0, max_value=99)):
         """Sets the default userlimit of a voice channel."""
         await self.configure(channel, "limit", limit)
         await ctx.send(f"Default limit has been set to `{limit}`")
 
     # SET THE DEFAULT BITRATE ON A CHANNEL
-    @parent.sub_command(name="bitrate")
+    @parent.sub_command(name="defaultbitrate")
     async def child_bitrate(self, ctx, channel: discord.VoiceChannel, bitrate: int = commands.Param(min_value=8000, max_value=384000)):
         """Sets the default bitrate of a voice channel."""
         limit = int(channel.guild.bitrate_limit)
