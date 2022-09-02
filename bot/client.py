@@ -24,7 +24,7 @@ class Bot(commands.Bot):
     def __init__(self):
         super().__init__(
             intents=intents,
-            activity=discord.Game(""),
+            activity=discord.Game("At your service!"),
             allowed_mentions=discord.AllowedMentions.none()
         )
 
@@ -107,6 +107,7 @@ class Bot(commands.Bot):
         self.spam_control[key] = now
         return time_passed
 
+    # CREATE CHANNEL AND ROLE
     async def on_voice_join(self, member, channel):
         if str(channel.id) not in self.configs:
             return
@@ -194,7 +195,6 @@ class Bot(commands.Bot):
         )
 
         text_overwrites = channel.overwrites
-        #get the id of the role "VoiceAdmin"
         voiceadmin = discord.utils.get(member.guild.roles, name="VoiceAdmin")
         text_overwrites ={
             member.guild.default_role: discord.PermissionOverwrite(
@@ -210,17 +210,23 @@ class Bot(commands.Bot):
             
         textchannel_voice = await member.guild.create_text_channel(
             name="text-for-voice",
-            topic=f"Only admins and those people can see it. VC ID: {new_channel.id}",
+            topic=f"VC ID: {new_channel.id}",
             overwrites=text_overwrites
         )
 
+        # MOVE MEMBER
         await member.move_to(new_channel)
+        # ADD ROLE TO USER
         await member.add_roles(newchannelrole)
+        # ADD CHANNEL TO LIST
         self.channels.append(new_channel.id)
         self.textchannels.append(textchannel_voice.id)
+        # SEND MESSAGE AND SAVE CONFIGS
+        await textchannel_voice.send(f"This is your personal text channel! Here you can discuss everything thats related to your voice channel. This channel will be deleted when everyone has left the voice channel. Messages in his channel can oly be read by people in your voice channel, and server admins.")
         await self.channels.save()
         await self.textchannels.save()
 
+    # CHECK HOW MANY PEOPLE ARE IN THE CHANNEL, IF 0 DELETE CHANNEL
     async def on_voice_leave(self, member, channel):
         if channel.id in self.channels:
             if len(channel.members) == 0:
@@ -231,6 +237,7 @@ class Bot(commands.Bot):
                 await channel.delete()
                 # no need to remove from self.channels because of on_guild_channel_delete
 
+    # DELETE CHANNEL IF DELETED BY USER
     async def on_voice_state_update(self, member, before, after):
         if before.channel != after.channel:
             if before.channel is not None:
@@ -241,12 +248,13 @@ class Bot(commands.Bot):
             if after.channel is not None:
                 await self.on_voice_join(member, after.channel)
 
+    # DELETE TEXT CHANNEL AND ROLE IF DELETED BY USER
     async def on_guild_channel_delete(self, channel):
         if channel.id in self.channels:
             self.channels.remove(channel.id)
             #remove the specific text channel from the server
             for textchannel in channel.guild.text_channels:
-                if textchannel.topic == f"Only admins and those people can see it. VC ID: {channel.id}":
+                if textchannel.topic == f"VC ID: {channel.id}":
                     await textchannel.delete()
             #remove the specific role from the server
             for role in channel.guild.roles:
@@ -258,6 +266,7 @@ class Bot(commands.Bot):
         if key in self.configs:
             self.configs.pop(key)
             await self.configs.save()
+
 
     async def on_guild_remove(self, guild):
         with suppress(KeyError):
@@ -272,5 +281,7 @@ class Bot(commands.Bot):
         await self.channels.save()
         await self.configs.save()
 
+    # EXCEPTION HANDLING
+    # SEND ERROR MESSAGE TO USER
     async def on_slash_command_error(self, ctx, error):
         await ctx.send(str(error), ephemeral=True)

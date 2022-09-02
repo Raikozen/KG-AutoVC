@@ -22,6 +22,7 @@ class Default(commands.Cog):
         else:
             await self.bot.configs.save()
 
+    # INITIAL SETUP FOR ADMIN COMMANDS
     @commands.slash_command(name="vcadmin")
     @commands.has_guild_permissions(manage_guild=True)
     @commands.has_role("VoiceAdmin")
@@ -29,6 +30,7 @@ class Default(commands.Cog):
         """Default settings for created channels"""
         pass
 
+    # SETTING UP THE PARENT CHANNEL
     @parent.sub_command(name="setup")
     @commands.bot_has_guild_permissions(move_members=True, manage_roles=True, connect=True)
     async def child_setup(ctx):
@@ -39,18 +41,31 @@ class Default(commands.Cog):
         await ctx.bot.configs.save()
         await ctx.send(f"A new category and a new starter channel have been created. Join `{channel.name}` and try it out")
 
-    @parent.sub_command(name="name")
+    # SETUP THE DEFAULT NAME FOR THE CHANNELS
+    @parent.sub_command(name="defaultname")
     async def child_name(self, ctx, channel: discord.VoiceChannel, name: str):
         """Sets the default name of a voice channel."""
         await self.configure(channel, "name", name)
         await ctx.send(f"Default name has been set to `{name}`")
 
+    # ADD NEW CHANNEL TO THE STARTER LIST
+    @parent.sub_command(name="addchannel")
+    async def child_add(self, ctx, channel: discord.VoiceChannel):
+        """Adds a channel to the starter list"""
+        if str(channel.id) in self.bot.configs:
+            raise commands.BadArgument("This channel has already been added")
+        self.bot.configs[str(channel.id)] = {}
+        await self.bot.configs.save()
+        await ctx.send(f"Channel `{channel.name}` has been added to the starter channels")
+
+    # SET THE DEFAULT USERLIMIT ON A CHANNEL
     @parent.sub_command(name="limit")
     async def child_limit(self, ctx, channel: discord.VoiceChannel, limit: int = commands.Param(min_value=0, max_value=99)):
         """Sets the default userlimit of a voice channel."""
         await self.configure(channel, "limit", limit)
         await ctx.send(f"Default limit has been set to `{limit}`")
 
+    # SET THE DEFAULT BITRATE ON A CHANNEL
     @parent.sub_command(name="bitrate")
     async def child_bitrate(self, ctx, channel: discord.VoiceChannel, bitrate: int = commands.Param(min_value=8000, max_value=384000)):
         """Sets the default bitrate of a voice channel."""
@@ -60,6 +75,7 @@ class Default(commands.Cog):
         await self.configure(channel, "bitrate", bitrate)
         await ctx.send(f"Default bitrate has been set to `{bitrate}`")
 
+    # LISTS ALL CHANNELS INCLUDING THEIR SETTINGS
     @parent.sub_command(name="list")
     async def child_list(ctx):
         """Lists all voice channels including their settings"""
@@ -86,6 +102,7 @@ class Default(commands.Cog):
                 )
             await ctx.send(embed=embed)
 
+    # SHOWS BASIC BOT INFORMATION
     @parent.sub_command(name="info")
     async def child_info(ctx):
         """Shows you information about the bot"""

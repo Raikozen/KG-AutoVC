@@ -2,7 +2,6 @@ import disnake as discord
 from disnake.ext import commands
 import difflib
 
-
 def get_command_info(cmd):
     if isinstance(cmd, commands.InvokableSlashCommand):
         return cmd.name, cmd.description
@@ -18,7 +17,8 @@ class HelpMenu(discord.ui.View):
         self.page = 0
         self.pages = (len(self.cmds) + per_page - 1) // per_page
 
-        self.add_item(discord.ui.Button(label="Source", url="https://github.com/Pawl-Patrol/Dynamic-Voice-Channels"))
+        #discord ui button for github link
+        self.add_item(discord.ui.Button(label="Github", url="https://github.com/Raikozen/KG-AutoVoiceChannels", style=discord.ButtonStyle.URL))
 
     def format_page(self, page):
         embed = discord.Embed(
